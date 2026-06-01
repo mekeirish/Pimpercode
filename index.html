@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pimper Code</title>
+  <style>
+    /* ==========================================================================
+       CONFIG COULEURS & SURFACES STRICTES (CoreUI-Atomic v4 - Dark Mode)
+       ========================================================================== */
+    :root {
+      --c-1: #1e1e22; /* Gris foncé (Fond principal) */
+      --c-2: #e3e3e6; /* Blanc cassé (Texte & Contraste) */
+      --c-3: #2563eb; /* Bleu Électrique (Accent actions) */
+
+      --surface-raised: 6px 6px 12px #141416, -6px -6px 12px #28282e;
+      --surface-sunken: inset 4px 4px 8px #141416, inset -4px -4px 8px #28282e;
+      
+      --radius-ui: 16px;
+      --radius-sm: 10px;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --space-sm: 10px;
+      --space-md: 18px;
+      --space-lg: 24px;
+    }
+
+    /* ==========================================================================
+       STRUCTURE DE BASE APPLICATIVE (Mobile-First)
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--c-1);
+      color: var(--c-2);
+      font-family: var(--font-ui);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: var(--space-md);
+    }
+
+    .phone-wrapper {
+      width: 100%;
+      max-width: 420px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-md);
+    }
+
+    header {
+      text-align: center;
+      padding-top: var(--space-sm);
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--c-2);
+    }
+
+    header p {
+      font-size: 0.85rem;
+      color: var(--c-2);
+      opacity: 0.5;
+      margin-top: 4px;
+    }
+
+    .engine-container {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ==========================================================================
+       CLASSES ATOMIQUES DU SYSTEME COREUI
+       ========================================================================== */
+    .ui-raised {
+      background-color: var(--c-1);
+      border-radius: var(--radius-ui);
+      box-shadow: var(--surface-raised);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .ui-sunken {
+      background-color: var(--c-1);
+      border-radius: var(--radius-ui);
+      box-shadow: var(--surface-sunken);
+      border: none;
+      outline: none;
+    }
+
+    .ui-interactive {
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      user-select: none;
+    }
+
+    .ui-interactive:active {
+      box-shadow: var(--surface-sunken) !important;
+      transform: scale(0.96);
+    }
+
+    .p-sm { padding: var(--space-sm); }
+    .p-md { padding: var(--space-md); }
+    .gap-md { gap: var(--space-md); }
+
+    /* ==========================================================================
+       COMPOSANT NUANCIER DYNAMIQUE
+       ========================================================================== */
+    .palette-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .color-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      gap: 6px;
+    }
+
+    .btn-square {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-sm);
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .color-preview {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      right: 4px;
+      bottom: 4px;
+      border-radius: calc(var(--radius-sm) - 3px);
+      border: 1px dashed rgba(227, 227, 230, 0.25);
+      background-color: transparent;
+      transition: background-color 0.2s ease, border 0.2s ease;
+    }
+
+    .color-code {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--c-2);
+      opacity: 0.4;
+      text-transform: uppercase;
+      text-align: center;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .hidden-picker {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    /* ==========================================================================
+       COMPOSANT : SELECTEUR DE STYLE VISUEL
+       ========================================================================== */
+    .style-wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .select-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .select-container::after {
+      content: '▼';
+      font-size: 0.7rem;
+      position: absolute;
+      right: var(--space-md);
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--c-2);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    select.ui-sunken {
+      width: 100%;
+      color: var(--c-2);
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      font-weight: 600;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-color: var(--c-1);
+    }
+
+    /* ==========================================================================
+       COMPOSANT : ZONE UPLOAD IMAGE SOURCE
+       ========================================================================== */
+    .upload-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .btn-upload {
+      width: 100%;
+      color: var(--c-2);
+      opacity: 0.8;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+      border: none;
+    }
+
+    .preview-box {
+      width: 100%;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .preview-img {
+      max-width: 100%;
+      max-height: 140px;
+      border-radius: var(--radius-sm);
+      object-fit: contain;
+      transform-origin: center center;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .zoom-container {
+      display: none;
+      align-items: center;
+      gap: var(--space-sm);
+      width: 100%;
+      margin-top: -4px;
+    }
+
+    .zoom-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--c-2);
+      opacity: 0.5;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .zoom-slider {
+      flex: 1;
+      height: 8px;
+      -webkit-appearance: none;
+      appearance: none;
+      outline: none;
+      padding: 0;
+    }
+
+    .zoom-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--c-3);
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .zoom-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--c-3);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* ==========================================================================
+       BOUTON AUTO-PALETTE
+       ========================================================================== */
+    .btn-auto-palette {
+      width: 100%;
+      color: var(--c-2);
+      opacity: 0.8;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+      border: none;
+      margin-top: 4px;
+    }
+
+    /* ==========================================================================
+       ZONE TEXTE ET BOUTONS D'ACTION
+       ========================================================================== */
+    .prompt-textarea {
+      width: 100%;
+      height: 25vh;
+      max-height: 210px;
+      color: var(--c-2);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      resize: none;
+      white-space: pre-wrap;
+    }
+
+    .actions-container {
+      display: flex;
+      width: 100%;
+      gap: var(--space-md);
+    }
+
+    .btn-action {
+      flex: 1;
+      color: var(--c-3);
+      font-weight: 700;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+      border: none;
+    }
+
+    footer {
+      text-align: center;
+      padding: var(--space-sm) 0;
+    }
+
+    .signature {
+      font-size: 0.75rem;
+      color: var(--c-2);
+      opacity: 0.35;
+      letter-spacing: 0.02em;
+    }
+  </style>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4b6cb7">
+<link rel="apple-touch-icon" href="icon.png"></head>
+<body>
+
+  <div class="phone-wrapper">
+    
+    <header>
+      <h1>Pimper Code</h1>
+      <p>Moteur d'injection CoreUI-Atomic v4</p>
+    </header>
+
+    <main class="engine-container gap-md">
+      
+      <div class="palette-container">
+        <div class="color-slot">
+          <button class="ui-raised ui-interactive btn-square" data-index="1" data-selected="false">
+            <div class="color-preview" id="preview-1"></div>
+          </button>
+          <span class="color-code" id="code-1">----</span>
+          <input type="color" id="picker-1" class="hidden-picker">
+        </div>
+
+        <div class="color-slot">
+          <button class="ui-raised ui-interactive btn-square" data-index="2" data-selected="false">
+            <div class="color-preview" id="preview-2"></div>
+          </button>
+          <span class="color-code" id="code-2">----</span>
+          <input type="color" id="picker-2" class="hidden-picker">
+        </div>
+
+        <div class="color-slot">
+          <button class="ui-raised ui-interactive btn-square" data-index="3" data-selected="false">
+            <div class="color-preview" id="preview-3"></div>
+          </button>
+          <span class="color-code" id="code-3">----</span>
+          <input type="color" id="picker-3" class="hidden-picker">
+        </div>
+
+        <div class="color-slot">
+          <button class="ui-raised ui-interactive btn-square" data-index="4" data-selected="false">
+            <div class="color-preview" id="preview-4"></div>
+          </button>
+          <span class="color-code" id="code-4">----</span>
+          <input type="color" id="picker-4" class="hidden-picker">
+        </div>
+
+        <div class="color-slot">
+          <button class="ui-raised ui-interactive btn-square" data-index="5" data-selected="false">
+            <div class="color-preview" id="preview-5"></div>
+          </button>
+          <span class="color-code" id="code-5">----</span>
+          <input type="color" id="picker-5" class="hidden-picker">
+        </div>
+
+        <div class="color-slot">
+          <button class="ui-raised ui-interactive btn-square" data-index="6" data-selected="false">
+            <div class="color-preview" id="preview-6"></div>
+          </button>
+          <span class="color-code" id="code-6">----</span>
+          <input type="color" id="picker-6" class="hidden-picker">
+        </div>
+      </div>
+
+      <div class="style-wrapper">
+        <div class="select-container">
+          <select id="styleSelect" class="ui-sunken p-md ui-interactive">
+            <option value="Skeuomorphism">Skeuomorphism</option>
+            <option value="Flat Design">Flat Design</option>
+            <option value="Material Design">Material Design</option>
+            <option value="Neumorphism" selected>Neumorphism</option>
+            <option value="Glassmorphism">Glassmorphism</option>
+            <option value="Claymorphism">Claymorphism</option>
+            <option value="Aurora UI">Aurora UI</option>
+            <option value="Bauhaus">Bauhaus</option>
+            <option value="Brutalism">Brutalism</option>
+            <option value="Neubrutalism">Neubrutalism</option>
+            <option value="Minimalism">Minimalism</option>
+            <option value="Retro">Retro</option>
+            <option value="Vintage">Vintage</option>
+            <option value="Y2K">Y2K</option>
+            <option value="Neo Frutiger Aero">Neo Frutiger Aero</option>
+            <option value="Cyberpunk">Cyberpunk</option>
+            <option value="Retro-Futurism">Retro-Futurism</option>
+            <option value="Maximalism">Maximalism</option>
+            <option value="Dark Mode">Dark Mode</option>
+            <option value="3D">3D</option>
+            <option value="Isometric">Isometric</option>
+            <option value="Bento Grid">Bento Grid</option>
+            <option value="Liquid Glass">Liquid Glass</option>
+            <option value="Neoclassical">Neoclassical</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="upload-wrapper">
+        <button id="uploadBtn" class="ui-raised ui-interactive p-md btn-upload">
+          📷 Upload Image Source
+        </button>
+        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+        
+        <div id="previewBox" class="ui-sunken p-sm preview-box">
+          <img id="previewImg" class="preview-img" src="" alt="Source">
+        </div>
+
+        <div id="zoomContainer" class="zoom-container">
+          <span class="zoom-label">Zoom</span>
+          <input type="range" id="zoomSlider" min="1" max="8" step="0.1" value="1" class="ui-sunken zoom-slider">
+        </div>
+
+        <!-- Nouveau bouton d'extraction automatique de palette -->
+        <button id="autoPaletteBtn" class="ui-raised ui-interactive p-md btn-auto-palette" style="display: none;">
+          🎨 Générer palette automatique
+        </button>
+      </div>
+      
+      <textarea id="protocolField" class="ui-sunken p-md prompt-textarea" spellcheck="false" readonly></textarea>
+
+      <div class="actions-container">
+        <button id="refreshBtn" class="ui-raised ui-interactive p-md btn-action">
+          Refresh
+        </button>
+        <button id="copyBtn" class="ui-raised ui-interactive p-md btn-action">
+          Copier
+        </button>
+      </div>
+
+    </main>
+
+    <footer>
+      <p class="signature">Made by Laiche Brahim 2026 Paris</p>
+    </footer>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const textarea = document.getElementById('protocolField');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const copyBtn = document.getElementById('copyBtn');
+      const squares = document.querySelectorAll('.btn-square');
+      const styleSelect = document.getElementById('styleSelect');
+      
+      const uploadBtn = document.getElementById('uploadBtn');
+      const imageInput = document.getElementById('imageInput');
+      const previewBox = document.getElementById('previewBox');
+      const previewImg = document.getElementById('previewImg');
+      const zoomContainer = document.getElementById('zoomContainer');
+      const zoomSlider = document.getElementById('zoomSlider');
+      const autoPaletteBtn = document.getElementById('autoPaletteBtn');
+
+      // Variables d'état pour la pipette, l'image et la navigation spatiale
+      let hasImage = false;
+      let activeSamplerIndex = null;
+      const sampleCanvas = document.createElement('canvas');
+      const sampleCtx = sampleCanvas.getContext('2d');
+
+      let scale = 1;
+      let translateX = 0;
+      let translateY = 0;
+      let isPanning = false;
+      let startX = 0;
+      let startY = 0;
+      let hasMoved = false;
+
+      // Met à jour la transformation CSS 2D de l'image de prévisualisation
+      const updateTransform = () => {
+        previewImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+      };
+
+      // Gestionnaire de changement de curseur de Zoom
+      zoomSlider.addEventListener('input', (e) => {
+        scale = parseFloat(e.target.value);
+        if (scale === 1) {
+          translateX = 0;
+          translateY = 0;
+        }
+        updateTransform();
+      });
+
+      // Navigation Glisser-Déposer (Pan) sur souris et tactile
+      const startPan = (clientX, clientY) => {
+        if (!hasImage) return;
+        isPanning = true;
+        hasMoved = false;
+        startX = clientX - translateX;
+        startY = clientY - translateY;
+      };
+
+      const movePan = (clientX, clientY) => {
+        if (!isPanning) return;
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+        if (Math.abs(deltaX - translateX) > 2 || Math.abs(deltaY - translateY) > 2) {
+          hasMoved = true;
+        }
+        translateX = deltaX;
+        translateY = deltaY;
+        updateTransform();
+      };
+
+      previewImg.addEventListener('mousedown', (e) => startPan(e.clientX, e.clientY));
+      window.addEventListener('mousemove', (e) => movePan(e.clientX, e.clientY));
+      window.addEventListener('mouseup', () => { isPanning = false; });
+
+      previewImg.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) startPan(e.touches[0].clientX, e.touches[0].clientY);
+      });
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1) movePan(e.touches[0].clientX, e.touches[0].clientY);
+      });
+      window.addEventListener('touchend', () => { isPanning = false; });
+
+      // Fonction utilitaire pour nettoyer l'état de sélection visuel de la pipette
+      const clearSamplerState = () => {
+        if (activeSamplerIndex) {
+          const prevSquare = document.querySelector(`.btn-square[data-index="${activeSamplerIndex}"]`);
+          if (prevSquare) {
+            prevSquare.style.outline = '';
+            prevSquare.style.outlineOffset = '';
+          }
+        }
+        activeSamplerIndex = null;
+        previewImg.style.cursor = 'default';
+      };
+
+      // Gestion des sélecteurs de couleur
+      squares.forEach(square => {
+        const index = square.getAttribute('data-index');
+        const picker = document.getElementById(`picker-${index}`);
+        const preview = document.getElementById(`preview-${index}`);
+        const codeText = document.getElementById(`code-${index}`);
+
+        let pressTimer;
+        let isLongPress = false;
+
+        // Détection de l'appui long
+        const startPress = () => {
+          isLongPress = false;
+          pressTimer = setTimeout(() => {
+            isLongPress = true;
+            
+            // On vide le slot couleur
+            preview.style.backgroundColor = 'transparent';
+            preview.style.border = '1px dashed rgba(227, 227, 230, 0.25)';
+            codeText.textContent = '----';
+            codeText.style.opacity = '0.4';
+            square.setAttribute('data-selected', 'false');
+            picker.value = '#000000';
+            
+            if (activeSamplerIndex === index) {
+              clearSamplerState();
+            }
+            
+            // Mise à jour temps réel du texte du protocole
+            textarea.value = buildProtocolText();
+          }, 600);
+        };
+
+        const cancelPress = () => {
+          clearTimeout(pressTimer);
+        };
+
+        // Événements d'appui long multi-plateforme (Souris + Tactile)
+        square.addEventListener('mousedown', startPress);
+        square.addEventListener('touchstart', startPress);
+        square.addEventListener('mouseup', cancelPress);
+        square.addEventListener('mouseleave', cancelPress);
+        square.addEventListener('touchend', cancelPress);
+        square.addEventListener('touchmove', cancelPress);
+
+        // Bloque le menu contextuel natif sur mobile pendant le long press
+        square.addEventListener('contextmenu', (e) => {
+          if (isLongPress) e.preventDefault();
+        });
+
+        square.addEventListener('click', (e) => {
+          // Si c'était un appui long, on intercepte et on annule le clic standard
+          if (isLongPress) {
+            isLongPress = false;
+            return;
+          }
+          
+          if (hasImage) {
+            if (activeSamplerIndex === index) {
+              clearSamplerState();
+            } else {
+              clearSamplerState();
+              activeSamplerIndex = index;
+              square.style.outline = '2px solid var(--c-3)';
+              square.style.outlineOffset = '2px';
+              previewImg.style.cursor = 'crosshair';
+            }
+          } else {
+            picker.click();
+          }
+        });
+
+        picker.addEventListener('input', (e) => {
+          const selectedColor = e.target.value.toUpperCase();
+          preview.style.backgroundColor = selectedColor;
+          preview.style.border = 'none';
+          codeText.textContent = selectedColor;
+          codeText.style.opacity = '0.8';
+          square.setAttribute('data-selected', 'true');
+        });
+      });
+
+      // Gestion dynamique du bouton Upload / Delete
+      uploadBtn.addEventListener('click', () => {
+        if (hasImage) {
+          hasImage = false;
+          imageInput.value = '';
+          previewBox.style.display = 'none';
+          zoomContainer.style.display = 'none';
+          autoPaletteBtn.style.display = 'none';
+          previewImg.src = '';
+          uploadBtn.innerHTML = '📷 Upload Image Source';
+          clearSamplerState();
+          
+          // Reset global du zoom
+          scale = 1; translateX = 0; translateY = 0;
+          zoomSlider.value = 1; updateTransform();
+        } else {
+          imageInput.click();
+        }
+      });
+
+      // Rafraîchit le canvas d'échantillonnage après chargement de l'image
+      const refreshSampleCanvas = () => {
+        if (!previewImg.complete || previewImg.naturalWidth === 0) return;
+        sampleCanvas.width = previewImg.naturalWidth;
+        sampleCanvas.height = previewImg.naturalHeight;
+        sampleCtx.drawImage(previewImg, 0, 0);
+      };
+
+      imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            previewImg.src = event.target.result;
+            previewBox.style.display = 'flex';
+            zoomContainer.style.display = 'flex';
+            autoPaletteBtn.style.display = 'block';  // Afficher le bouton auto palette
+            hasImage = true;
+            uploadBtn.innerHTML = '🗑️ Delete Image';
+
+            // Reset global du zoom au nouvel import
+            scale = 1; translateX = 0; translateY = 0;
+            zoomSlider.value = 1; updateTransform();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // Mise à jour du canvas à chaque chargement réussi de l'image
+      previewImg.addEventListener('load', () => {
+        refreshSampleCanvas();
+      });
+
+      // =========================================================================
+      // EXTRACTION AUTOMATIQUE DE PALETTE (K-means + Maximin)
+      // =========================================================================
+      autoPaletteBtn.addEventListener('click', () => {
+        if (!hasImage || !previewImg.complete || previewImg.naturalWidth === 0) return;
+        
+        // Créer un canvas temporaire réduit
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        const maxDim = 100;
+        let w = previewImg.naturalWidth;
+        let h = previewImg.naturalHeight;
+        if (w > maxDim || h > maxDim) {
+          const ratio = Math.min(maxDim / w, maxDim / h);
+          w = Math.floor(w * ratio);
+          h = Math.floor(h * ratio);
+        }
+        tempCanvas.width = w;
+        tempCanvas.height = h;
+        tempCtx.drawImage(previewImg, 0, 0, w, h);
+        
+        const imageData = tempCtx.getImageData(0, 0, w, h).data;
+        
+        // Collecter les pixels opaques
+        const pixels = [];
+        for (let i = 0; i < imageData.length; i += 4) {
+          const r = imageData[i];
+          const g = imageData[i+1];
+          const b = imageData[i+2];
+          if (imageData[i+3] < 128) continue;
+          pixels.push([r, g, b]);
+        }
+        if (pixels.length === 0) return;
+
+        // Sous-échantillonnage pour performance (max 1000 pixels)
+        let samplePixels = pixels;
+        if (pixels.length > 1000) {
+          samplePixels = [];
+          const step = Math.floor(pixels.length / 1000);
+          for (let i = 0; i < pixels.length; i += step) {
+            samplePixels.push(pixels[i]);
+          }
+        }
+
+        const k = Math.min(6, samplePixels.length);
+        if (k === 0) return;
+
+        // Initialisation Maximin (centroïdes les plus éloignés)
+        const centroids = [];
+        const randomIndex = Math.floor(Math.random() * samplePixels.length);
+        centroids.push([...samplePixels[randomIndex]]);
+        
+        while (centroids.length < k) {
+          let maxDist = -1;
+          let farthestIndex = -1;
+          for (let i = 0; i < samplePixels.length; i++) {
+            const p = samplePixels[i];
+            let minDistToCentroids = Infinity;
+            for (const c of centroids) {
+              const dr = p[0] - c[0];
+              const dg = p[1] - c[1];
+              const db = p[2] - c[2];
+              const dist = dr*dr + dg*dg + db*db;
+              if (dist < minDistToCentroids) minDistToCentroids = dist;
+            }
+            if (minDistToCentroids > maxDist) {
+              maxDist = minDistToCentroids;
+              farthestIndex = i;
+            }
+          }
+          centroids.push([...samplePixels[farthestIndex]]);
+        }
+
+        // K-means (10 itérations max)
+        const assignments = new Array(samplePixels.length).fill(0);
+        for (let iter = 0; iter < 10; iter++) {
+          for (let i = 0; i < samplePixels.length; i++) {
+            const p = samplePixels[i];
+            let bestDist = Infinity;
+            let bestCluster = 0;
+            for (let j = 0; j < k; j++) {
+              const c = centroids[j];
+              const dr = p[0] - c[0];
+              const dg = p[1] - c[1];
+              const db = p[2] - c[2];
+              const dist = dr*dr + dg*dg + db*db;
+              if (dist < bestDist) {
+                bestDist = dist;
+                bestCluster = j;
+              }
+            }
+            assignments[i] = bestCluster;
+          }
+          
+          const sums = Array.from({length: k}, () => [0,0,0]);
+          const counts = Array(k).fill(0);
+          for (let i = 0; i < samplePixels.length; i++) {
+            const cluster = assignments[i];
+            const p = samplePixels[i];
+            sums[cluster][0] += p[0];
+            sums[cluster][1] += p[1];
+            sums[cluster][2] += p[2];
+            counts[cluster]++;
+          }
+          let changed = false;
+          for (let j = 0; j < k; j++) {
+            if (counts[j] > 0) {
+              const newR = Math.round(sums[j][0] / counts[j]);
+              const newG = Math.round(sums[j][1] / counts[j]);
+              const newB = Math.round(sums[j][2] / counts[j]);
+              if (newR !== centroids[j][0] || newG !== centroids[j][1] || newB !== centroids[j][2]) {
+                changed = true;
+                centroids[j] = [newR, newG, newB];
+              }
+            }
+          }
+          if (!changed) break;
+        }
+
+        const clusterSizes = Array(k).fill(0);
+        for (const cluster of assignments) {
+          clusterSizes[cluster]++;
+        }
+        
+        const clusters = centroids.map((c, i) => ({
+          r: c[0], g: c[1], b: c[2],
+          size: clusterSizes[i]
+        })).sort((a, b) => b.size - a.size);
+
+        squares.forEach((square, idx) => {
+          const index = square.getAttribute('data-index');
+          const picker = document.getElementById(`picker-${index}`);
+          const preview = document.getElementById(`preview-${index}`);
+          const codeText = document.getElementById(`code-${index}`);
+          
+          if (idx < clusters.length && clusters[idx].size > 0) {
+            const { r, g, b } = clusters[idx];
+            const hex = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+            preview.style.backgroundColor = hex;
+            preview.style.border = 'none';
+            codeText.textContent = hex;
+            codeText.style.opacity = '0.8';
+            square.setAttribute('data-selected', 'true');
+            picker.value = hex;
+          } else {
+            preview.style.backgroundColor = 'transparent';
+            preview.style.border = '1px dashed rgba(227, 227, 230, 0.25)';
+            codeText.textContent = '----';
+            codeText.style.opacity = '0.4';
+            square.setAttribute('data-selected', 'false');
+            picker.value = '#000000';
+          }
+        });
+        
+        textarea.value = buildProtocolText();
+        clearSamplerState();
+      });
+
+      // Fonction améliorée pour capturer la couleur exacte sous le curseur
+      const sampleColorFromImage = (clientX, clientY) => {
+        if (!hasImage || !activeSamplerIndex) return false;
+        if (!previewImg.complete || previewImg.naturalWidth === 0) return false;
+
+        const rect = previewImg.getBoundingClientRect();
+        // Coordonnées relatives dans l'élément (0..largeurVisuelle, 0..hauteurVisuelle)
+        const relX = clientX - rect.left;
+        const relY = clientY - rect.top;
+        
+        // Vérifier si le clic est dans les limites de l'image
+        if (relX < 0 || relY < 0 || relX > rect.width || relY > rect.height) return false;
+
+        // Construire la matrice de transformation inverse
+        const matrix = new DOMMatrix()
+          .translate(translateX, translateY)
+          .scale(scale);
+        const invMatrix = matrix.inverse();
+        
+        // Point dans le repère de l'image avant transformation (mais toujours dans l'espace de l'élément)
+        const localPoint = new DOMPoint(relX, relY).matrixTransform(invMatrix);
+        
+        // Dimensions de l'élément sans transformation (taille d'affichage à l'échelle 1)
+        const baseWidth = rect.width / scale;
+        const baseHeight = rect.height / scale;
+        
+        // Passage en coordonnées relatives (0..1) de l'image affichée sans zoom
+        const fx = localPoint.x / baseWidth;
+        const fy = localPoint.y / baseHeight;
+        
+        if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return false;
+        
+        // Conversion en coordonnées pixels réelles de l'image source
+        const srcX = Math.floor(fx * previewImg.naturalWidth);
+        const srcY = Math.floor(fy * previewImg.naturalHeight);
+        
+        if (srcX < 0 || srcX >= previewImg.naturalWidth || srcY < 0 || srcY >= previewImg.naturalHeight) return false;
+        
+        try {
+          const pixel = sampleCtx.getImageData(srcX, srcY, 1, 1).data;
+          const r = pixel[0], g = pixel[1], b = pixel[2];
+          const hex = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+          
+          const preview = document.getElementById(`preview-${activeSamplerIndex}`);
+          const codeText = document.getElementById(`code-${activeSamplerIndex}`);
+          const picker = document.getElementById(`picker-${activeSamplerIndex}`);
+          const square = document.querySelector(`.btn-square[data-index="${activeSamplerIndex}"]`);
+          
+          preview.style.backgroundColor = hex;
+          preview.style.border = 'none';
+          codeText.textContent = hex;
+          codeText.style.opacity = '0.8';
+          square.setAttribute('data-selected', 'true');
+          picker.value = hex;
+          
+          clearSamplerState();
+          return true;
+        } catch (err) {
+          console.error("Erreur d'échantillonnage :", err);
+          return false;
+        }
+      };
+
+      // Nouveau gestionnaire de clic pour la pipette avec prise en compte du zoom/pan
+      previewImg.addEventListener('click', (e) => {
+        // Si l'utilisateur a déplacé l'image (pan), on ignore le clic pour éviter les faux positifs
+        if (hasMoved) {
+          hasMoved = false;
+          return;
+        }
+        
+        if (hasImage && activeSamplerIndex) {
+          e.preventDefault();
+          sampleColorFromImage(e.clientX, e.clientY);
+        }
+      });
+
+      // Moteur de génération du template dynamique CoreUI v4 avec synchronisation du Style choisi
+      const buildProtocolText = () => {
+        const activeColors = [];
+        const currentStyle = styleSelect.value;
+        
+        squares.forEach(square => {
+          if (square.getAttribute('data-selected') === 'true') {
+            const index = square.getAttribute('data-index');
+            const colorValue = document.getElementById(`picker-${index}`).value.toUpperCase();
+            activeColors.push(colorValue);
+          }
+        });
+
+        let cssTokens = '';
+        if (activeColors.length > 0) {
+          activeColors.forEach((hex, i) => {
+            cssTokens += `      --c-${i + 1}: ${hex};\n`;
+          });
+        } else {
+          cssTokens += `      /* [Sélectionne des couleurs en haut pour injecter automatiquement] */\n`;
+        }
+
+        const count = activeColors.length;
+
+        return `### 🎛️ CONFIGURATION DE L'INTERFACE (À modifier avant d'envoyer)
+* **STYLE VISUEL :** ${currentStyle}
+* **NOMBRE STRICT DE COULEURS :** ${count}
+* **LES SEULS CODES COULEURS AUTORISÉS :**
+    \`\`\`css
+    :root {
+${cssTokens}
+      /* Effets de surfaces (Valeurs UNIQUES standards. PAS de blocs de propriétés) */
+      --surface-raised: [Ex: 6px 6px 12px #141416, -6px -6px 12px #28282e ou une valeur box-shadow unique]; 
+      --surface-sunken: [Ex: inset 4px 4px 8px #141416, inset -4px -4px 8px #28282e ou une valeur box-shadow unique];
+      
+      /* Espacements et Rayons */
+      --radius-ui: 16px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+    }
+    \`\`\`
+
+---
+
+### 🚀 DIRECTIVES D'ARCHITECTURE STRICTES (\`CoreUI-Atomic v4\`)
+Tu es un ingénieur frontend d'élite. Tu codes sous une contrainte de minimalisme extrême. L'application entière doit tenir dans un fichier unique (Monolithe HTML/CSS/JS) performant et sans code redondant.
+
+#### 1. Loi Absolue de la Palette Restreinte
+Tu as l'interdiction totale et absolue d'utiliser une couleur qui n'est pas définie dans les variables \`--c-1\` à \`--c-N\` ci-dessus.
+* Aucun code hexadécimal volant (#ffffff, #000), aucun nom de couleur CSS (black, white, gray), et aucune fonction de couleur (rgba, hsl) externe ne doit apparaître dans le reste du CSS ou du HTML.
+* Si le style demande une bordure, une ombre subtile ou un texte secondaire, tu dois composer exclusivement en jouant sur l'opacité de tes variables autorisées (ex: opacity: 0.6) ou en combinant tes couleurs définies.
+
+#### 2. Abstraction des Surfaces (Règle DRY & Interdiction SASS)
+L'interface utilise uniquement trois classes de base pour l'aspect visuel :
+* .ui-raised : Élément en relief (Card, panneau, bouton au repos). Applique la variable \`--surface-raised\` (ex: box-shadow).
+* .ui-sunken : Élément enfoncé (Champ de saisie, zone passive enfoncée). Applique la variable \`--surface-sunken\`.
+* .ui-interactive : Ajoute le survol et passe en \`--surface-sunken\` au clic (:active) OU si l'élément possède la classe .is-active.
+* ⚠️ **ATTENTION INTERDICTION SYNTAXE :** Les variables CSS ne sont pas des mixins SASS. Il est STRICTEMENT interdit d'écrire un bloc de plusieurs propriétés CSS différentes à l'intérieur d'une seule variable du \`:root\`. Les propriétés structurelles spécifiques (comme \`border-top\`, \`background-color\`) doivent être écrites directement dans le corps des classes \".ui-raised\" et \".ui-sunken\", et non stockées dans les variables globales.
+
+#### 3. Structure des Espacements Globaux
+Utilise exclusivement ces classes utilitaires pour agencer tes éléments :
+* .gap-sm { gap: var(--space-sm); } | .gap-md { gap: var(--space-md); }
+* .p-sm { padding: var(--space-sm); } | .p-md { padding: var(--space-md); } | .p-lg { padding: var(--space-lg); }
+
+#### 4. Protocole d'Auto-Correction (Anti-Drift & Anti-SASS)
+Avant de me délivrer le code, effectue une vérification stricte : si tu repères une couleur non standard, un attribut style="..." ou un pixel en dur pour un espacement, tu l'effaces et tu le corriges avec les tokens imposés. Vérifie également que tes variables CSS ne contiennent aucun bloc de propriétés composites invalide.
+
+Confirme que tu as assimilé la version v4 en me disant combien de couleurs sont actuellement actives dans ma configuration et à quel élément structurel tu attribues --c-1.`;
+      };
+
+      textarea.value = buildProtocolText();
+
+      // Gestionnaire Refresh
+      refreshBtn.addEventListener('click', () => {
+        textarea.value = '';
+        setTimeout(() => {
+          textarea.value = buildProtocolText();
+          textarea.style.opacity = '0.6';
+          setTimeout(() => textarea.style.opacity = '1', 120);
+        }, 80);
+      });
+
+      // Gestionnaire Copier avec mise à jour et feedback
+      copyBtn.addEventListener('click', () => {
+        const updatedContent = buildProtocolText();
+        textarea.value = updatedContent;
+        
+        navigator.clipboard.writeText(updatedContent).then(() => {
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = '✅ Copié !';
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+          }, 1500);
+        }).catch(err => {
+          console.error("Erreur de copie :", err);
+        });
+      });
+    });
+  </script>
+
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));}</script>
+</body>
+</html>
